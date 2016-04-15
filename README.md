@@ -21,10 +21,12 @@ console.log("My test value is " + config.get('test.something'));
 
 ## Goal of this module 
   * Allows developers to manage configuration files in a common structure
-  * Support a mix of common config file types (Javascript, JSON, Coffee)
+  * Support a mix of common config file types (Javascript, JSON, Coffeescript)
   * Allows overriding of configurations data on different module levels
   * Allows special configurations based on server environment (NODE_ENV)
-  
+
+[NOTE: coffee script is not yet supported]  
+
 ## Installation
 
 ```bash
