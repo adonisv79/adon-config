@@ -52,4 +52,4 @@ adon-config relies on the following node modules
   * [lodash] (https://github.com/lodash/lodash)
   
 ## License
-GPL
+[GPL](https://github.com/adonisv79/adon-config/blob/master/LICENSE)
