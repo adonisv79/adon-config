@@ -52,6 +52,10 @@ root
 ## Dependencies
 adon-config relies on the following node modules
   * [lodash] (https://github.com/lodash/lodash)
-  
+
+## Source codes
+adon-config is publicly available on Github
+  * [https://github.com/adonisv79/adon-config] (https://github.com/adonisv79/adon-config)
+
 ## License
 [GPL](https://github.com/adonisv79/adon-config/blob/master/LICENSE)
