@@ -54,7 +54,7 @@ class ConfigManager {
 	}
 }
 
-module.exports = singleton ? singleton :  new ConfigManager();
+module.exports = singleton ? singleton :  singleton = new ConfigManager();
 //codes below are for test purposes only
 //module.exports.load(__dirname);
 //console.dir(self.config);
