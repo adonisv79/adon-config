@@ -3,6 +3,7 @@
 let fs = require('fs'),
 	path = require('path'),
 	_ = require('lodash'),
+	coffee_script = require('coffee-script'),
 	self,
 	singleton;
 
@@ -34,19 +35,27 @@ class ConfigManager {
 		return _.has(self.config, path);
 	}
 
-	load (module_root) {
+	/**
+	 * Loads a configuration from an object or a configuration directory
+	 * @param source - the object instance of a configuration or the directory which follows the standard configuration structure
+	 */
+	load (source) {
 		try {
-			let config_path = path.resolve(module_root+ '/config');
-			if (fs.statSync(config_path).isDirectory()) {
-				let base_path = path.isAbsolute(config_path) ? config_path + '/' : config_path,
-					default_path = base_path + 'default',
-					environment = process.env.NODE_ENV || 'development',
-					environment_path = base_path + 'env/' +  environment.toLowerCase();
+			if (typeof source === 'object') {
+				self.config = source;
+			} else {
+				let config_path = path.resolve(source + '/config');
+				if (fs.statSync(config_path).isDirectory()) {
+					let base_path = path.isAbsolute(config_path) ? config_path + '/' : config_path,
+						default_path = base_path + 'default',
+						environment = process.env.NODE_ENV || 'development',
+						environment_path = base_path + 'env/' +  environment.toLowerCase();
 
-				loadConfigFile(default_path + '.json');
-				loadConfigFile(default_path + '.js');
-				loadConfigFile(environment_path + '.json');
-				loadConfigFile(environment_path + '.js');
+					loadConfigFile(default_path + '.json');
+					loadConfigFile(default_path + '.js');
+					loadConfigFile(environment_path + '.json');
+					loadConfigFile(environment_path + '.js');
+				}
 			}
 		} catch (err) {
 			//do nothing
