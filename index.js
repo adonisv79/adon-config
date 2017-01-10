@@ -1,19 +1,36 @@
 "use strict";
+const _ = require('lodash');
+const loaded_paths = [];
+const fs = require('fs');
+const path = require('path');
+const coffee_script = require('coffee-script');
 
-let fs = require('fs'),
-	path = require('path'),
-	_ = require('lodash'),
-	coffee_script = require('coffee-script'),
-	self,
-	singleton;
+let config = {};
 
-function loadConfigFile(file_path, type) {
+function loadConfigFile(target_path, config_path) {
 	try {
-		if (fs.statSync(file_path).isFile()) {
-			if (type === 'json') {
-				self.config = _.defaultsDeep(JSON.parse(fs.readFileSync(file_path, 'utf8')), self.config);
-			} else {
-				self.config = _.defaultsDeep(require(path.resolve(file_path)), self.config);
+		let result = fs.readdirSync(target_path);
+		for (let i = 0; i < result.length; i++) {
+			let filename = path.resolve(target_path + '/' + result[i]);
+			if (fs.statSync(filename).isDirectory()) {
+				let new_config_path = config_path ? config_path + '.' + result[i] : result[i];
+				loadConfigFile(filename, new_config_path);
+			} else if (fs.statSync(filename).isFile()) {
+				let new_config = {};
+				let target_config_path = '';
+				if (config_path) {
+					target_config_path = config_path + '.' + result[i].split('.')[0]
+				} else {
+					target_config_path = result[i].split('.')[0];
+				}
+
+				if (getFileType(filename) === 'json') {
+					_.set(new_config, target_config_path, loadJsonFile(filename));
+				} else {
+					_.set(new_config, target_config_path, importJavascriptFile(filename));
+				}
+
+				config = _.defaultsDeep(new_config, config);
 			}
 		}
 	} catch (err) {
@@ -21,49 +38,43 @@ function loadConfigFile(file_path, type) {
 	}
 }
 
-class ConfigManager {
-	constructor() {
-		self = this;
-		self.config = {};
-	}
+function getFileType(file_path) {
+	const filename_breakdown = file_path.split('.');
+	return filename_breakdown[filename_breakdown.length - 1];
+}
 
-	get (path) {
-		return _.get(self.config, path, undefined);
-	}
+function loadJsonFile(file_path) {
+	return JSON.parse(fs.readFileSync(file_path, 'utf8'));
+}
 
-	has (path) {
-		return _.has(self.config, path);
-	}
+function importJavascriptFile(file_path) {
+	return require(path.resolve(file_path));
+}
 
-	/**
-	 * Loads a configuration from an object or a configuration directory
-	 * @param source - the object instance of a configuration or the directory which follows the standard configuration structure
-	 */
-	load (source) {
-		try {
-			if (typeof source === 'object') {
-				self.config = source;
-			} else {
-				let config_path = path.resolve(source + '/config');
-				if (fs.statSync(config_path).isDirectory()) {
-					let base_path = path.isAbsolute(config_path) ? config_path + '/' : config_path,
-						default_path = base_path + 'default',
-						environment = process.env.NODE_ENV || 'development',
-						environment_path = base_path + 'env/' +  environment.toLowerCase();
+module.exports = {
+	get: () => {
+		return config;
+	},
+	load: () => {
+		let config_path = (path.resolve('.') + '/config')
+		config_path = path.resolve(config_path); //correct it based on OS
 
-					loadConfigFile(default_path + '.json');
-					loadConfigFile(default_path + '.js');
-					loadConfigFile(environment_path + '.json');
-					loadConfigFile(environment_path + '.js');
-				}
-			}
-		} catch (err) {
-			//do nothing
+		if (config && loaded_paths.indexOf(config_path) >= 0) {
+			return config;
+		}
+
+		console.log('ADON-CONFIG: Loading ' + config_path);
+
+		if (fs.statSync(config_path).isDirectory()) {
+			const default_path = path.resolve(config_path + '/common');
+			const environment = process.env.NODE_ENV || 'development';
+			const environment_path = path.resolve(config_path + '/env/' + environment.toLowerCase());
+
+			loadConfigFile(default_path);
+			loadConfigFile(environment_path);
+			return config;
+		} else {
+			throw new Error('ADONCONFIG_CONFIG_ROOTFOLDER_NOT_FOUND');
 		}
 	}
 }
-
-module.exports = singleton ? singleton :  singleton = new ConfigManager();
-//codes below are for test purposes only
-//module.exports.load(__dirname);
-//console.dir(self.config);
