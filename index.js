@@ -3,7 +3,6 @@ const _ = require('lodash');
 const loaded_paths = [];
 const fs = require('fs');
 const path = require('path');
-const coffee_script = require('coffee-script');
 
 let config = {};
 

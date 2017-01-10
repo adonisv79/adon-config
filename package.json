@@ -1,6 +1,6 @@
 {
   "name": "adon-config",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "This module is used for managing system configurations in cascading order.",
   "keywords": [
     "adon",
